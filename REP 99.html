@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1021b1">
+<title>Bijumon ES — Reprotronics LLC</title>
+<meta property="og:title" content="Bijumon ES">
+<meta property="og:description" content="Senior Designer at Reprotronics LLC">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --primary: #1021b1; --accent: #feffff; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f0f4f8;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 0 0 40px;
+  }
+  .card {
+    width: 100%;
+    max-width: 430px;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* HERO HEADER */
+  .hero {
+    background: linear-gradient(160deg, var(--primary) 0%, color-mix(in srgb, var(--primary) 80%, #1a4a7a) 100%);
+    padding: 50px 28px 80px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50px; right: -50px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: -30px;
+    width: 160px; height: 160px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+  }
+
+  /* Company name at top */
+  .company-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 100px;
+    padding: 6px 16px;
+    margin-bottom: 28px;
+  }
+  .company-badge-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .company-badge-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.9);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* Company tagline */
+  .company-tagline {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 24px;
+    font-style: italic;
+    text-align: center;
+  }
+
+  /* Photo */
+  .photo-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  .photo-ring {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 4px solid var(--accent);
+    padding: 3px;
+    background: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .photo-ring img, .photo-initials {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .photo-initials {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Name & designation */
+  .profile-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+  .profile-designation {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  .profile-department {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .profile-bio {
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    text-align: center;
+    max-width: 300px;
+    margin: 0 auto;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  /* BODY */
+  .body {
+    background: white;
+    border-radius: 28px 28px 0 0;
+    margin-top: -28px;
+    position: relative;
+    z-index: 2;
+    padding: 28px 24px 10px;
+  }
+
+  /* SAVE CONTACT BUTTON */
+  .save-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    margin-bottom: 24px;
+    transition: all 0.2s;
+    box-shadow: 0 6px 20px rgba(230,48,48,0.35);
+    letter-spacing: 0.3px;
+  }
+  .save-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(230,48,48,0.45);
+  }
+  .save-btn:active { transform: translateY(0); }
+
+  /* CONTACT INFO */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 24px;
+  }
+  .contact-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+  .contact-item:hover { background: #f7f8fc; }
+  .contact-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: #f0f4f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .contact-text { flex: 1; text-align: left; }
+  .contact-label { font-size: 11px; color: #9ca3af; font-weight: 500; }
+  .contact-value { font-size: 14px; color: #1a1a2e; font-weight: 600; margin-top: 1px; }
+  .contact-arrow { color: #d1d5db; font-size: 12px; }
+
+  /* ABOUT COMPANY */
+  .about-box {
+    background: #f7f8fc;
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .about-box p {
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.7;
+  }
+
+  /* SOCIAL BUTTONS */
+  .social-section { margin-bottom: 24px; }
+  .social-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .social-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: white;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .social-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .social-btn span { font-size: 16px; }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 16px 0 8px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 8px;
+  }
+  .footer p {
+    font-size: 11px;
+    color: #d1d5db;
+  }
+  .footer strong { color: var(--primary); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- HERO -->
+  <div class="hero">
+    <!-- Company name badge at top -->
+    <div class="company-badge">
+      <div class="company-badge-dot"></div>
+      <div class="company-badge-name">Reprotronics LLC</div>
+    </div>
+
+    <div class="company-tagline">true relable partner since 1993</div>
+
+    <!-- Profile photo -->
+    <div class="photo-wrap">
+      <div class="photo-ring">
+        <div class="photo-initials">B</div>
+      </div>
+    </div>
+
+    <!-- Name, title, bio -->
+    <div class="profile-name">Bijumon ES</div>
+    <div class="profile-designation">Senior Designer</div>
+    <div class="profile-department">Design</div>
+    
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- SAVE CONTACT BUTTON -->
+    <a class="save-btn" href="data:text/vcard;charset=utf-8,BEGIN%3AVCARD%0D%0AVERSION%3A3.0%0D%0AFN%3ABijumon%20ES%0D%0AN%3AES%3BBijumon%3B%3B%3B%0D%0AORG%3AReprotronics%20LLC%0D%0ATITLE%3ASenior%20Designer%0D%0ATEL%3BTYPE%3DCELL%3A%2B971%2055%209291%20205%0D%0ATEL%3BTYPE%3DWORK%3A%2B971%204%208854%20111%0D%0AEMAIL%3BTYPE%3DWORK%3Abiju.creative%40reprotronics.ae%0D%0AEMAIL%3BTYPE%3DWORK%3Ainfo%40reprotronics.ae%0D%0AURL%3Awww.reprotronics.com%0D%0AADR%3BTYPE%3DWORK%3A%3B%3BP.%20O.%20Box%2089633%2C%20DIP%201%2C%20Dubai%2C%20UAE%3B%3B%3B%3B%0D%0ANOTE%3ASenior%20Designer%20at%20Reprotronics%20LLC%0D%0AEND%3AVCARD" download="REP 99.vcf">
+      <span>📲</span> Save Contact
+    </a>
+
+    <!-- CONTACT DETAILS -->
+    <div class="section-label">Contact Details</div>
+    <div class="contact-list">
+      
+      <a class="contact-item" href="tel:+971559291205">
+        <div class="contact-icon" style="background:#e0f2fe">📞</div>
+        <div class="contact-text">
+          <div class="contact-label">Direct Mobile</div>
+          <div class="contact-value">+971 55 9291 205</div>
+        </div>
+        <div class="contact-arrow">›</div>
+      </a>
+
+      
+      <a class="contact-item" href="https://wa.me/971559291205">
+        <div class="contact-icon" style="background:#dcfce7">💬</div>
+        <div class="contact-text">
+          <div class="contact-label">WhatsApp</div>
+          <div class="contact-value">+971 55 9291 205</div>
+        </div>
+        <div class="contact-arrow">›</div>
+      </a>
+
+      
+      <a class="contact-item" href="mailto:biju.creative@reprotronics.ae">
+        <div class="contact-icon" style="background:#fef9c3">✉️</div>
+        <div class="contact-text">
+          <div class="contact-label">Work Email</div>
+          <div class="contact-value">biju.creative@reprotronics.ae</div>
+        </div>
+        <div class="contact-arrow">›</div>
+      </a>
+
+      
+      <a class="contact-item" href="tel:+97148854111">
+        <div class="contact-icon" style="background:#ede9fe">🏢</div>
+        <div class="contact-text">
+          <div class="contact-label">Company Phone</div>
+          <div class="contact-value">+971 4 8854 111</div>
+        </div>
+        <div class="contact-arrow">›</div>
+      </a>
+
+      
+      <a class="contact-item" href="mailto:info@reprotronics.ae">
+        <div class="contact-icon" style="background:#ede9fe">📧</div>
+        <div class="contact-text">
+          <div class="contact-label">Company Email</div>
+          <div class="contact-value">info@reprotronics.ae</div>
+        </div>
+        <div class="contact-arrow">›</div>
+      </a>
+
+      
+      <a class="contact-item" href="www.reprotronics.com" target="_blank">
+        <div class="contact-icon" style="background:#f0fdf4">🌐</div>
+        <div class="contact-text">
+          <div class="contact-label">Website</div>
+          <div class="contact-value">www.reprotronics.com</div>
+        </div>
+        <div class="contact-arrow">›</div>
+      </a>
+
+      
+      <div class="contact-item">
+        <div class="contact-icon" style="background:#fef3c7">📍</div>
+        <div class="contact-text">
+          <div class="contact-label">Office Address</div>
+          <div class="contact-value" style="font-size:13px">P. O. Box 89633, DIP 1, Dubai, UAE</div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div class="divider"></div>
+    <div class="section-label">About Us</div>
+    <div class="about-box"><p>Joinery · Aluminium · Steel · Acrylic · Fiberglass     3D Print / Mould · Special Effects Paint · Detail Engineering     Digital Displays / Video Walls     Wide Format Digital Prints — Roll to Roll / Flatbed     Fabric Visuals · 3D Design     Electrical & Electronics Tech     Offset / Digital Printing — Commercial & Luxury Packaging     HSE Compliant Production & Installations     Permanent / Semi-Permanent & Promotional Projects     Production with Sustainable Practices.  ISO 9001 ISO 14001 ISO 45001 FSC® C138467 SEDEX ECOVADIS CDP DISCLOSER</p></div>
+
+    
+    <div class="divider"></div>
+    <div class="section-label">Follow Us</div>
+    <div class="social-section">
+      <div class="social-row"><a href="https://www.linkedin.com/company/reprotronics-l.l.c" target="_blank" class="social-btn" style="background:#0077b5"><span>🔗</span>LinkedIn</a><a href="https://www.facebook.com/reprotronics/" target="_blank" class="social-btn" style="background:#1877f2"><span>📘</span>Facebook</a><a href="https://www.instagram.com/reprotronics_/" target="_blank" class="social-btn" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)"><span>📸</span>Instagram</a><a href="https://www.youtube.com/@reprotronics1055" target="_blank" class="social-btn" style="background:#ff0000"><span>▶️</span>YouTube</a></div>
+    </div>
+
+    
+
+    <div class="footer">
+      <p>Digital card powered by <strong>Reprotronics LLC</strong></p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
