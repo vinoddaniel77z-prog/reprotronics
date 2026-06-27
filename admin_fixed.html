@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reprotronics — Staff Card Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&family=Merriweather:wght@400;700&family=Roboto:wght@400;700&family=Montserrat:wght@400;700&family=Open+Sans:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0a2240; --navy-mid: #143660; --red: #e63030; --red-light: #ff4d4d;
+    --cream: #f7f8fc; --gray: #6b7280; --gray-light: #e5e7eb; --success: #10b981;
+    --font-display: 'Playfair Display', serif; --font-body: 'Inter', sans-serif;
+  }
+  body { font-family: var(--font-body); background: var(--cream); color: #1a1a2e; min-height: 100vh; }
+  header {
+    background: var(--navy); padding: 14px 28px; display: flex;
+    align-items: center; justify-content: space-between;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 38px; height: 38px; background: var(--red); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); color: white; font-size: 18px; font-weight: 700; }
+  .logo-text h1 { font-family: var(--font-display); color: white; font-size: 18px; line-height: 1; }
+  .logo-text p { color: rgba(255,255,255,0.5); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .staff-count { color: rgba(255,255,255,0.6); font-size: 12px; margin-right: 6px; }
+  .staff-count span { color: white; font-weight: 600; }
+  .btn { padding: 9px 16px; border: none; border-radius: 8px; font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+  .btn-primary { background: var(--red); color: white; }
+  .btn-primary:hover { background: var(--red-light); }
+  .btn-navy { background: var(--navy); color: white; }
+  .btn-navy:hover { background: var(--navy-mid); }
+  .btn-outline { background: transparent; color: var(--navy); border: 2px solid var(--navy); }
+  .btn-outline:hover { background: var(--navy); color: white; }
+  .btn-ghost { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.2); }
+  .btn-danger { background: #fee2e2; color: #dc2626; }
+  .btn-danger:hover { background: #dc2626; color: white; }
+  .btn-sm { padding: 6px 12px; font-size: 11px; }
+  .btn-success { background: var(--success); color: white; }
+  .btn-success:hover { background: #059669; }
+  .main { max-width: 1300px; margin: 0 auto; padding: 28px 20px; }
+  .tabs { display: flex; gap: 4px; background: white; border-radius: 12px; padding: 5px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); width: fit-content; }
+  .tab { padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--gray); transition: all 0.2s; border: none; background: none; font-family: var(--font-body); }
+  .tab.active { background: var(--navy); color: white; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .section-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 12px; flex-wrap: wrap; }
+  .section-title { font-family: var(--font-display); font-size: 22px; color: var(--navy); }
+  .section-subtitle { font-size: 13px; color: var(--gray); margin-top: 3px; }
+  .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 18px; }
+  .card-title { font-size: 13px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 2px solid var(--gray-light); }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-full { grid-column: 1 / -1; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  label { font-size: 11px; font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.5px; }
+  input, textarea, select { padding: 9px 12px; border: 2px solid var(--gray-light); border-radius: 8px; font-family: var(--font-body); font-size: 13px; color: #1a1a2e; transition: border-color 0.2s; background: white; }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--navy); }
+  textarea { resize: vertical; min-height: 80px; }
+  .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .social-field { display: flex; align-items: center; gap: 8px; background: var(--cream); padding: 8px 12px; border-radius: 10px; border: 2px solid var(--gray-light); }
+  .social-field:focus-within { border-color: var(--navy); }
+  .social-icon { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; }
+  .social-field input { border: none; background: none; padding: 0; flex: 1; font-size: 12px; }
+  .social-field input:focus { outline: none; }
+  .staff-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 16px; }
+  .staff-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.07); transition: transform 0.2s, box-shadow 0.2s; border: 2px solid transparent; }
+  .staff-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); border-color: var(--navy); }
+  .staff-card-top { background: linear-gradient(135deg, var(--navy), var(--navy-mid)); padding: 18px; display: flex; align-items: center; gap: 12px; }
+  .staff-avatar { width: 54px; height: 54px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); object-fit: cover; background: var(--navy-mid); display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; font-weight: 700; font-family: var(--font-display); flex-shrink: 0; overflow: hidden; }
+  .staff-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+  .staff-info { flex: 1; min-width: 0; }
+  .staff-name { font-family: var(--font-display); color: white; font-size: 15px; font-weight: 700; }
+  .staff-designation { color: rgba(255,255,255,0.85); font-size: 12px; font-weight: 500; }
+  .staff-dept { color: rgba(255,255,255,0.55); font-size: 11px; }
+  .staff-card-body { padding: 12px 18px; }
+  .staff-contact-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--gray); margin-bottom: 5px; }
+  .staff-card-actions { padding: 10px 18px; border-top: 1px solid var(--gray-light); display: flex; gap: 6px; flex-wrap: wrap; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(10,34,64,0.7); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 18px; width: 100%; max-width: 680px; max-height: 92vh; overflow-y: auto; box-shadow: 0 25px 60px rgba(0,0,0,0.3); }
+  .modal-header { padding: 20px 24px 16px; border-bottom: 2px solid var(--gray-light); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: white; z-index: 10; }
+  .modal-title { font-family: var(--font-display); font-size: 18px; color: var(--navy); }
+  .modal-close { width: 30px; height: 30px; border-radius: 50%; border: none; background: var(--gray-light); cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--gray); transition: all 0.2s; }
+  .modal-close:hover { background: var(--red); color: white; }
+  .modal-body { padding: 20px 24px; }
+  .modal-footer { padding: 14px 24px 20px; border-top: 2px solid var(--gray-light); display: flex; gap: 10px; justify-content: flex-end; position: sticky; bottom: 0; background: white; }
+  .photo-upload-area { display: flex; align-items: center; gap: 18px; background: var(--cream); border: 2px dashed var(--gray-light); border-radius: 12px; padding: 18px; margin-bottom: 18px; transition: border-color 0.2s; }
+  .photo-upload-area:hover { border-color: var(--navy); }
+  .photo-preview { width: 72px; height: 72px; border-radius: 50%; background: var(--navy); border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; color: white; font-size: 26px; font-family: var(--font-display); overflow: hidden; flex-shrink: 0; }
+  .photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .logo-preview-box { width: 110px; height: 60px; border-radius: 10px; background: var(--navy); border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; padding: 6px; }
+  .logo-preview-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .photo-upload-info { flex: 1; }
+  .photo-upload-info p { font-size: 12px; color: var(--gray); margin-top: 3px; }
+  .qr-modal-content { text-align: center; padding: 8px 0; }
+  .qr-box { display: inline-block; padding: 18px; background: white; border-radius: 14px; border: 3px solid var(--navy); margin: 14px auto; }
+  .qr-staff-name { font-family: var(--font-display); font-size: 20px; color: var(--navy); margin-bottom: 3px; }
+  .qr-staff-role { color: var(--gray); font-size: 13px; margin-bottom: 12px; }
+  .url-box { background: var(--cream); border: 2px solid var(--gray-light); border-radius: 10px; padding: 10px 14px; font-size: 12px; color: var(--gray); word-break: break-all; margin-top: 14px; text-align: left; }
+  .url-box strong { display: block; color: var(--navy); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px; }
+  .alert { padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500; margin-bottom: 18px; display: flex; align-items: flex-start; gap: 8px; }
+  .alert-info { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+  .alert-success { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+  .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step { display: flex; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--gray-light); }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 30px; height: 30px; background: var(--navy); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .step-body h4 { font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 3px; }
+  .step-body p { font-size: 12px; color: var(--gray); line-height: 1.6; }
+  .code-inline { background: var(--cream); border: 1px solid var(--gray-light); border-radius: 4px; padding: 2px 6px; font-family: monospace; font-size: 11px; color: var(--navy); }
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--gray); }
+  .empty-state .icon { font-size: 48px; margin-bottom: 14px; }
+  .empty-state h3 { font-family: var(--font-display); font-size: 18px; color: var(--navy); margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; max-width: 340px; margin: 0 auto 18px; }
+
+  /* ── ABOUT US RICH EDITOR ── */
+  .rich-toolbar { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; background: #f8f9fa; border: 2px solid var(--gray-light); border-bottom: none; border-radius: 10px 10px 0 0; }
+  .rich-toolbar select, .rich-toolbar button { padding: 5px 10px; border: 1px solid var(--gray-light); border-radius: 6px; font-size: 12px; font-family: var(--font-body); cursor: pointer; background: white; color: #1a1a2e; font-weight: 500; height: 30px; }
+  .rich-toolbar select:focus, .rich-toolbar button:focus { outline: none; border-color: var(--navy); }
+  .rich-toolbar button:hover { background: var(--navy); color: white; }
+  .rich-toolbar .sep { width: 1px; background: var(--gray-light); margin: 0 2px; }
+  .rich-editor { min-height: 120px; padding: 12px 14px; border: 2px solid var(--gray-light); border-radius: 0 0 10px 10px; font-size: 14px; line-height: 1.7; outline: none; background: white; }
+  .rich-editor:focus { border-color: var(--navy); }
+  .rich-editor[placeholder]:empty::before { content: attr(placeholder); color: #9ca3af; pointer-events: none; }
+
+  @media (max-width: 768px) {
+    header { padding: 12px 14px; }
+    .main { padding: 16px 12px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.three { grid-template-columns: 1fr; }
+    .social-grid { grid-template-columns: 1fr; }
+    .staff-grid { grid-template-columns: 1fr; }
+    .header-actions { gap: 5px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">R</div>
+    <div class="logo-text">
+      <h1>Reprotronics</h1>
+      <p>Staff Card Manager</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <span class="staff-count">Staff: <span id="headerCount">0</span></span>
+    <button class="btn btn-ghost btn-sm" onclick="backupData()">💾 Backup</button>
+    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('restoreInput').click()">📂 Restore</button>
+    <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restoreData(event)">
+    <button class="btn btn-ghost btn-sm" onclick="showTab('setup')">📖 Guide</button>
+    <button class="btn btn-primary" onclick="openAddStaff()">+ Add Staff</button>
+  </div>
+</header>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('company')" id="tab-company">🏢 Company Info</button>
+    <button class="tab" onclick="showTab('staff')" id="tab-staff">👥 Staff Cards</button>
+    <button class="tab" onclick="showTab('setup')" id="tab-setup">📖 Setup Guide</button>
+  </div>
+
+  <!-- TAB: COMPANY INFO -->
+  <div class="tab-content active" id="content-company">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Company Information</div>
+        <div class="section-subtitle">Set once — appears on all staff cards automatically.</div>
+      </div>
+      <button class="btn btn-primary" onclick="saveCompanyInfo()">💾 Save Company Info</button>
+    </div>
+    <div id="companySavedAlert" class="alert alert-success" style="display:none">✅ Company information saved!</div>
+
+    <div class="card">
+      <div class="card-title">Company Logo</div>
+      <div class="photo-upload-area">
+        <div class="logo-preview-box" id="logoPreviewBox">
+          <span style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center">No Logo</span>
+        </div>
+        <div class="photo-upload-info">
+          <strong style="font-size:14px;color:var(--navy)">Upload Company Logo</strong>
+          <p>Shown at the top of every staff profile page. PNG with transparent background works best. Displayed white on dark background.</p>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('logoInput').click()">🖼️ Upload Logo</button>
+            <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626" onclick="clearLogo()">✕ Remove</button>
+          </div>
+        </div>
+        <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleLogoUpload(event)">
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Basic Details</div>
+      <div class="form-grid">
+        <div class="field form-full">
+          <label>Company Name *</label>
+          <input type="text" id="companyName" placeholder="Reprotronics LLC" value="Reprotronics LLC">
+        </div>
+        <div class="field">
+          <label>Tagline / Slogan</label>
+          <input type="text" id="companyTagline" placeholder="Creating Excellence Since 1993">
+        </div>
+        <div class="field">
+          <label>Industry / Category</label>
+          <input type="text" id="companyIndustry" placeholder="Advertising, Publishing & Exhibitions">
+        </div>
+        <div class="field">
+          <label>Main Phone *</label>
+          <input type="text" id="companyPhone" placeholder="+971 4 XXX XXXX">
+        </div>
+        <div class="field">
+          <label>Company Email</label>
+          <input type="email" id="companyEmail" placeholder="info@reprotronics.com">
+        </div>
+        <div class="field">
+          <label>Website URL</label>
+          <input type="url" id="companyWebsite" placeholder="https://www.reprotronics.com">
+        </div>
+        <div class="field">
+          <label>WhatsApp Number</label>
+          <input type="text" id="companyWhatsapp" placeholder="+971XXXXXXXXX">
+        </div>
+        <div class="field form-full">
+          <label>Office Address</label>
+          <textarea id="companyAddress" placeholder="Office address, Dubai, UAE"></textarea>
+        </div>
+        <div class="field form-full">
+          <label>About the Company — Rich Editor</label>
+          <div class="rich-toolbar" id="aboutToolbar">
+            <select id="aboutFont" onchange="applyFont()" title="Font Family">
+              <option value="Inter">Inter</option>
+              <option value="Playfair Display">Playfair</option>
+              <option value="Merriweather">Merriweather</option>
+              <option value="Roboto">Roboto</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Open Sans">Open Sans</option>
+            </select>
+            <select id="aboutSize" onchange="applySize()" title="Font Size">
+              <option value="12px">12px</option>
+              <option value="13px" selected>13px</option>
+              <option value="14px">14px</option>
+              <option value="15px">15px</option>
+              <option value="16px">16px</option>
+              <option value="18px">18px</option>
+              <option value="20px">20px</option>
+            </select>
+            <div class="sep"></div>
+            <button onclick="fmt('bold')" title="Bold"><b>B</b></button>
+            <button onclick="fmt('italic')" title="Italic"><i>I</i></button>
+            <button onclick="fmt('underline')" title="Underline"><u>U</u></button>
+            <div class="sep"></div>
+            <button onclick="align('left')" title="Align Left">⬛◻◻</button>
+            <button onclick="align('center')" title="Center">◻⬛◻</button>
+            <button onclick="align('right')" title="Align Right">◻◻⬛</button>
+            <button onclick="align('justify')" title="Justify">☰</button>
+            <div class="sep"></div>
+            <input type="color" id="aboutColor" value="#333333" onchange="applyColor()" title="Text Color" style="width:30px;height:30px;padding:2px;border-radius:6px;border:1px solid var(--gray-light);cursor:pointer">
+            <button onclick="fmt('removeFormat')" title="Clear Formatting" style="font-size:11px">✕ Clear</button>
+          </div>
+          <div id="aboutEditor" class="rich-editor" contenteditable="true" placeholder="Write about your company here. Use the toolbar above to style the text..."></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Company Social Media</div>
+      <div class="social-grid">
+        <div class="social-field"><div class="social-icon" style="background:#0077b5">🔗</div><input type="text" id="socialLinkedIn" placeholder="LinkedIn URL"></div>
+        <div class="social-field"><div class="social-icon" style="background:#1877f2">📘</div><input type="text" id="socialFacebook" placeholder="Facebook URL"></div>
+        <div class="social-field"><div class="social-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">📸</div><input type="text" id="socialInstagram" placeholder="Instagram URL"></div>
+        <div class="social-field"><div class="social-icon" style="background:#1da1f2">🐦</div><input type="text" id="socialTwitter" placeholder="Twitter / X URL"></div>
+        <div class="social-field"><div class="social-icon" style="background:#ff0000">▶️</div><input type="text" id="socialYoutube" placeholder="YouTube URL"></div>
+        <div class="social-field"><div class="social-icon" style="background:#0088cc">✈️</div><input type="text" id="socialTelegram" placeholder="Telegram URL"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Branding &amp; GitHub</div>
+      <div class="form-grid three">
+        <div class="field">
+          <label>Primary Color</label>
+          <input type="color" id="brandPrimary" value="#0a2240" style="height:42px;padding:4px 6px;cursor:pointer">
+        </div>
+        <div class="field">
+          <label>Accent Color</label>
+          <input type="color" id="brandAccent" value="#e63030" style="height:42px;padding:4px 6px;cursor:pointer">
+        </div>
+        <div class="field">
+          <label>GitHub Pages Base URL</label>
+          <input type="text" id="githubBaseUrl" placeholder="https://yourname.github.io/reprotronics">
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--gray);margin-top:10px">⚠️ Set the GitHub Pages URL before generating QR codes. See Setup Guide tab for instructions.</p>
+    </div>
+  </div>
+
+  <!-- TAB: STAFF -->
+  <div class="tab-content" id="content-staff">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Staff Directory</div>
+        <div class="section-subtitle">Each staff member gets a QR code and a live profile page.</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-success" onclick="downloadAdminWithData()">💾 Save Admin File</button>
+        <button class="btn btn-outline" onclick="exportAllCards()">📦 Export All as ZIP</button>
+        <button class="btn btn-primary" onclick="openAddStaff()">+ Add Staff</button>
+      </div>
+    </div>
+    <div class="alert alert-warning">
+      ⚠️ <strong>Important:</strong> After any changes, click <strong>"💾 Save Admin File"</strong> to download an updated copy with all data baked in. Use that file next time.
+    </div>
+    <div class="alert alert-info">
+      📤 <strong>Before printing QR codes:</strong> Click <strong>"📦 Export All as ZIP"</strong> and upload all HTML files to your GitHub repository. Scanning a QR code before uploading will show a <strong>404 error</strong>.
+    </div>
+    <div id="staffListContainer">
+      <div class="empty-state">
+        <div class="icon">👤</div>
+        <h3>No Staff Added Yet</h3>
+        <p>Click "Add Staff Member" to create your first digital business card with QR code.</p>
+        <button class="btn btn-primary" onclick="openAddStaff()">+ Add First Staff Member</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SETUP GUIDE -->
+  <div class="tab-content" id="content-setup">
+    <div class="section-title" style="margin-bottom:18px">📖 Setup Guide — No Coding Required</div>
+    <div class="alert alert-info">💡 <strong>One-time setup in 10 minutes.</strong> After that, adding staff takes 2 minutes per person. QR codes work forever — completely free, no subscriptions.</div>
+    <div class="card">
+      <div class="card-title">Step-by-Step Setup</div>
+      <div class="steps">
+        <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Create a free GitHub account</h4><p>Go to <strong>github.com</strong> and sign up free. Remember your username.</p></div></div>
+        <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Create a new repository</h4><p>Click <strong>+</strong> → "New Repository". Name it <code class="code-inline">reprotronics</code>. Set to <strong>Public</strong>. Check "Add a README file". Click "Create".</p></div></div>
+        <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Enable GitHub Pages</h4><p>In your repository → <strong>Settings</strong> → <strong>Pages</strong>. Source: <strong>Deploy from a branch</strong> → <strong>main</strong>. Click Save. Your site: <code class="code-inline">https://YOURUSERNAME.github.io/reprotronics</code></p></div></div>
+        <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Enter your GitHub URL in Company Info</h4><p>Paste your URL into the <strong>GitHub Pages Base URL</strong> field on the Company Info tab. Save.</p></div></div>
+        <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Upload your logo and fill company details</h4><p>Complete all company details including logo. Write your About Us text using the rich editor. Save company info.</p></div></div>
+        <div class="step"><div class="step-num">6</div><div class="step-body"><h4>Add staff members</h4><p>Go to Staff Cards → Add Staff Member. Fill in details, upload photo, save.</p></div></div>
+        <div class="step"><div class="step-num">7</div><div class="step-body"><h4>Export and upload profile pages</h4><p>Click <strong>Export All as ZIP</strong>. Extract the ZIP. Upload all HTML files to your GitHub repository via <strong>"Add file" → "Upload files"</strong>.</p></div></div>
+        <div class="step"><div class="step-num">8</div><div class="step-body"><h4>Download QR codes</h4><p>Click <strong>📱 QR Code</strong> on any staff card → <strong>Download QR PNG</strong>. Print on business cards, badges, or materials.</p></div></div>
+        <div class="step"><div class="step-num">9</div><div class="step-body"><h4>Editing later — always Save Admin File</h4><p>After any changes, click <strong>💾 Save Admin File</strong>. This bakes ALL data into a new admin.html. Open that file next time — everything is already there.</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT STAFF MODAL -->
+<div class="modal-overlay" id="staffModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Add Staff Member</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="photo-upload-area">
+        <div class="photo-preview" id="photoPreview">👤</div>
+        <div class="photo-upload-info">
+          <strong style="font-size:13px;color:var(--navy)">Profile Photo</strong>
+          <p>Square photos work best. Max 3MB.</p>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('photoInput').click()">📷 Upload Photo</button>
+            <button class="btn btn-sm" style="background:#fee2e2;color:#dc2626" onclick="clearPhoto()">✕ Remove</button>
+          </div>
+        </div>
+        <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+      </div>
+      <div class="card-title" style="margin-bottom:14px">Personal Information</div>
+      <div class="form-grid" style="margin-bottom:18px">
+        <div class="field"><label>Full Name *</label><input type="text" id="staffName" placeholder="Mohammed Al Rashid"></div>
+        <div class="field"><label>Designation / Job Title *</label><input type="text" id="staffDesignation" placeholder="Senior Designer"></div>
+        <div class="field"><label>Department</label><input type="text" id="staffDepartment" placeholder="Creative & Design"></div>
+        <div class="field"><label>Employee ID (for URL, no spaces)</label><input type="text" id="staffId" placeholder="e.g. john-doe"></div>
+        <div class="field"><label>Direct Phone / Mobile *</label><input type="tel" id="staffPhone" placeholder="+971 50 XXX XXXX"></div>
+        <div class="field"><label>WhatsApp Number</label><input type="tel" id="staffWhatsapp" placeholder="+971 50 XXX XXXX"></div>
+        <div class="field form-full"><label>Work Email *</label><input type="email" id="staffEmail" placeholder="name@reprotronics.com"></div>
+        <div class="field form-full"><label>Personal Bio / Tagline (optional)</label><textarea id="staffBio" rows="2" placeholder="A short tagline or bio"></textarea></div>
+      </div>
+      <div class="card-title" style="margin-bottom:14px">Personal Social Media (Optional)</div>
+      <div class="social-grid">
+        <div class="social-field"><div class="social-icon" style="background:#0077b5">🔗</div><input type="text" id="staffLinkedIn" placeholder="LinkedIn profile URL"></div>
+        <div class="social-field"><div class="social-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">📸</div><input type="text" id="staffInstagram" placeholder="Instagram username or URL"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStaff()">💾 Save Staff Card</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR CODE MODAL -->
+<div class="modal-overlay" id="qrModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <div class="modal-title">QR Code</div>
+      <button class="modal-close" onclick="document.getElementById('qrModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="qr-modal-content">
+        <div class="qr-staff-name" id="qrName"></div>
+        <div class="qr-staff-role" id="qrRole"></div>
+        <div class="qr-box"><div id="qrCodeDisplay"></div></div>
+        <div id="qrUploadReminder" class="alert alert-warning" style="display:none;text-align:left;margin-top:10px">
+          ⚠️ <strong>QR will show 404 until you upload!</strong><br>
+          <span style="font-size:12px">Go to <strong>Staff Cards → Export All as ZIP</strong>, then upload the HTML files to your GitHub repository. Only then will scanning this QR code work.</span>
+        </div>
+        <div class="url-box"><strong>Profile URL</strong><span id="qrUrl"></span></div>
+        <div style="margin-top:14px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-navy" onclick="downloadQR()">⬇️ Download QR PNG</button>
+          <button class="btn btn-outline" onclick="copyUrl(event)">🔗 Copy URL</button>
+          <button class="btn btn-success btn-sm" onclick="testProfileUrl()" title="Open the URL to verify it works">🔍 Test Link</button>
+        </div>
+        <p style="font-size:12px;color:var(--gray);margin-top:12px">Print on business cards, ID badges, or marketing materials.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA STORE ──────────────────────────────────────────────
+let staffList = [];
+let companyInfo = {};
+let editingIndex = -1;
+let currentPhotoBase64 = '';
+let currentQrStaffId = '';
+
+const EMBEDDED_DATA = null; // PLACEHOLDER — do not edit this line manually
+
+function save() {
+  localStorage.setItem('rpt_staff',   JSON.stringify(staffList));
+  localStorage.setItem('rpt_company', JSON.stringify(companyInfo));
+}
+
+function load() {
+  if (EMBEDDED_DATA && (EMBEDDED_DATA.staff || EMBEDDED_DATA.company)) {
+    try {
+      staffList   = EMBEDDED_DATA.staff   || [];
+      companyInfo = EMBEDDED_DATA.company || {};
+      save();
+      return;
+    } catch(e) {}
+  }
+  try { staffList   = JSON.parse(localStorage.getItem('rpt_staff'))   || []; } catch(e) { staffList = []; }
+  try { companyInfo = JSON.parse(localStorage.getItem('rpt_company')) || {}; } catch(e) { companyInfo = {}; }
+}
+
+function downloadAdminWithData() {
+  const payload = { staff: staffList, company: companyInfo };
+  const html = document.documentElement.outerHTML;
+  const updated = html.replace(
+    /const EMBEDDED_DATA = .*?; \/\/ PLACEHOLDER[^\n]*/,
+    'const EMBEDDED_DATA = ' + JSON.stringify(payload) + '; // PLACEHOLDER — do not edit this line manually'
+  );
+  triggerDownload(new Blob([updated], {type:'text/html;charset=utf-8'}), 'admin.html');
+}
+
+function backupData() {
+  const payload = { staff: staffList, company: companyInfo, exportedAt: new Date().toISOString() };
+  triggerDownload(new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'}),
+    'reprotronics-backup-' + new Date().toISOString().slice(0,10) + '.json');
+}
+
+function restoreData(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.staff && !payload.company) { alert('Invalid backup file.'); return; }
+      if (!confirm('Replace all current data with this backup?')) return;
+      staffList   = payload.staff   || [];
+      companyInfo = payload.company || {};
+      save(); loadCompanyForm(); renderStaffList();
+      document.getElementById('headerCount').textContent = staffList.length;
+      alert('✅ Restored! ' + staffList.length + ' staff members loaded.');
+    } catch(err) { alert('Could not read file. Make sure it is a valid backup.'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.style.display = 'none';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+}
+
+// ── TABS ───────────────────────────────────────────────────
+function showTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.getElementById('content-' + name).classList.add('active');
+  if (name === 'staff') renderStaffList();
+}
+
+// ── RICH EDITOR ────────────────────────────────────────────
+function fmt(cmd) { document.getElementById('aboutEditor').focus(); document.execCommand(cmd, false, null); }
+function align(dir) { document.getElementById('aboutEditor').focus(); document.execCommand('justify' + dir.charAt(0).toUpperCase() + dir.slice(1), false, null); }
+function applyFont() {
+  const f = document.getElementById('aboutFont').value;
+  document.getElementById('aboutEditor').focus();
+  document.execCommand('fontName', false, f);
+}
+function applySize() {
+  const s = document.getElementById('aboutSize').value;
+  document.getElementById('aboutEditor').focus();
+  // Use a span approach for pixel sizes
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+    const range = sel.getRangeAt(0);
+    const span = document.createElement('span');
+    span.style.fontSize = s;
+    try { range.surroundContents(span); } catch(e) { document.execCommand('fontSize', false, '3'); }
+  }
+}
+function applyColor() {
+  const color = document.getElementById('aboutColor').value;
+  document.getElementById('aboutEditor').focus();
+  document.execCommand('foreColor', false, color);
+}
+function getAboutHTML() { return document.getElementById('aboutEditor').innerHTML.trim(); }
+function setAboutHTML(html) { document.getElementById('aboutEditor').innerHTML = html || ''; }
+
+// ── COMPANY INFO ───────────────────────────────────────────
+function loadCompanyForm() {
+  const c = companyInfo;
+  ['companyName','companyTagline','companyIndustry','companyPhone','companyEmail',
+   'companyWebsite','companyWhatsapp','companyAddress',
+   'socialLinkedIn','socialFacebook','socialInstagram','socialTwitter','socialYoutube','socialTelegram',
+   'brandPrimary','brandAccent','githubBaseUrl'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el && c[id] !== undefined) el.value = c[id];
+  });
+  // Load rich about us
+  setAboutHTML(c.companyAboutHTML || c.companyAbout || '');
+  updateLogoPreview();
+}
+
+function saveCompanyInfo() {
+  ['companyName','companyTagline','companyIndustry','companyPhone','companyEmail',
+   'companyWebsite','companyWhatsapp','companyAddress',
+   'socialLinkedIn','socialFacebook','socialInstagram','socialTwitter','socialYoutube','socialTelegram',
+   'brandPrimary','brandAccent','githubBaseUrl'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) companyInfo[id] = el.value.trim();
+  });
+  // Save rich about us as HTML
+  companyInfo.companyAboutHTML = getAboutHTML();
+  // Also save plain text fallback
+  companyInfo.companyAbout = document.getElementById('aboutEditor').innerText.trim();
+  save();
+  const alertEl = document.getElementById('companySavedAlert');
+  alertEl.style.display = 'flex';
+  setTimeout(() => alertEl.style.display = 'none', 3000);
+}
+
+// ── LOGO ───────────────────────────────────────────────────
+function handleLogoUpload(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { alert('Logo too large. Please use an image under 3MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    companyInfo.companyLogo = ev.target.result;
+    updateLogoPreview();
+  };
+  reader.readAsDataURL(file);
+}
+function clearLogo() {
+  companyInfo.companyLogo = '';
+  document.getElementById('logoInput').value = '';
+  updateLogoPreview();
+}
+function updateLogoPreview() {
+  const box = document.getElementById('logoPreviewBox');
+  if (companyInfo.companyLogo) {
+    box.innerHTML = '<img src="' + companyInfo.companyLogo + '" style="max-width:100%;max-height:100%;object-fit:contain">';
+  } else {
+    box.innerHTML = '<span style="font-size:11px;color:rgba(255,255,255,0.5);text-align:center">No Logo</span>';
+  }
+}
+
+// ── STAFF MODAL ────────────────────────────────────────────
+function openAddStaff() {
+  editingIndex = -1; currentPhotoBase64 = '';
+  document.getElementById('modalTitle').textContent = 'Add Staff Member';
+  clearStaffForm();
+  document.getElementById('staffModal').classList.add('open');
+}
+function openEditStaff(idx) {
+  editingIndex = idx;
+  const s = staffList[idx];
+  currentPhotoBase64 = s.photo || '';
+  document.getElementById('modalTitle').textContent = 'Edit — ' + s.name;
+  document.getElementById('staffName').value        = s.name        || '';
+  document.getElementById('staffDesignation').value = s.designation || '';
+  document.getElementById('staffDepartment').value  = s.department  || '';
+  document.getElementById('staffId').value          = s.id          || '';
+  document.getElementById('staffPhone').value       = s.phone       || '';
+  document.getElementById('staffWhatsapp').value    = s.whatsapp    || '';
+  document.getElementById('staffEmail').value       = s.email       || '';
+  document.getElementById('staffBio').value         = s.bio         || '';
+  document.getElementById('staffLinkedIn').value    = s.linkedIn    || '';
+  document.getElementById('staffInstagram').value   = s.instagram   || '';
+  updatePhotoPreview();
+  document.getElementById('staffModal').classList.add('open');
+}
+function clearStaffForm() {
+  ['staffName','staffDesignation','staffDepartment','staffId','staffPhone',
+   'staffWhatsapp','staffEmail','staffBio','staffLinkedIn','staffInstagram'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  currentPhotoBase64 = '';
+  updatePhotoPreview();
+}
+function closeModal() { document.getElementById('staffModal').classList.remove('open'); }
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 3 * 1024 * 1024) { alert('Photo too large. Please use an image under 3MB.'); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const img = new Image();
+    img.onload = function() {
+      const canvas = document.createElement('canvas');
+      const size = Math.min(img.width, img.height);
+      canvas.width = 300; canvas.height = 300;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, (img.width-size)/2, (img.height-size)/2, size, size, 0, 0, 300, 300);
+      currentPhotoBase64 = canvas.toDataURL('image/jpeg', 0.85);
+      updatePhotoPreview();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function clearPhoto() {
+  currentPhotoBase64 = '';
+  document.getElementById('photoInput').value = '';
+  updatePhotoPreview();
+}
+function updatePhotoPreview() {
+  const el = document.getElementById('photoPreview');
+  el.innerHTML = currentPhotoBase64
+    ? '<img src="' + currentPhotoBase64 + '" alt="Photo">'
+    : '👤';
+}
+
+function saveStaff() {
+  const name        = document.getElementById('staffName').value.trim();
+  const designation = document.getElementById('staffDesignation').value.trim();
+  if (!name)        { alert('Please enter the staff name.'); return; }
+  if (!designation) { alert('Please enter the job title.'); return; }
+  let id = document.getElementById('staffId').value.trim();
+  if (!id) id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const existingIds = staffList.map((s, i) => i === editingIndex ? null : s.id).filter(Boolean);
+  let finalId = id; let counter = 1;
+  while (existingIds.includes(finalId)) { finalId = id + '-' + counter++; }
+  const staff = {
+    name, designation,
+    department: document.getElementById('staffDepartment').value.trim(),
+    id: finalId,
+    phone:     document.getElementById('staffPhone').value.trim(),
+    whatsapp:  document.getElementById('staffWhatsapp').value.trim(),
+    email:     document.getElementById('staffEmail').value.trim(),
+    bio:       document.getElementById('staffBio').value.trim(),
+    linkedIn:  document.getElementById('staffLinkedIn').value.trim(),
+    instagram: document.getElementById('staffInstagram').value.trim(),
+    photo:     currentPhotoBase64,
+    createdAt: editingIndex >= 0 ? staffList[editingIndex].createdAt : new Date().toISOString()
+  };
+  if (editingIndex >= 0) staffList[editingIndex] = staff; else staffList.push(staff);
+  save(); closeModal(); showTab('staff');
+}
+function deleteStaff(idx) {
+  if (!confirm('Delete ' + staffList[idx].name + '\'s card? This cannot be undone.')) return;
+  staffList.splice(idx, 1); save(); renderStaffList();
+}
+
+// ── RENDER STAFF LIST ──────────────────────────────────────
+function renderStaffList() {
+  document.getElementById('headerCount').textContent = staffList.length;
+  const container = document.getElementById('staffListContainer');
+  if (staffList.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">👤</div><h3>No Staff Added Yet</h3><p>Click "Add Staff Member" to create your first digital business card with QR code.</p><button class="btn btn-primary" onclick="openAddStaff()">+ Add First Staff Member</button></div>';
+    return;
+  }
+  container.innerHTML = '<div class="staff-grid">' + staffList.map((s, i) => `
+    <div class="staff-card">
+      <div class="staff-card-top">
+        <div class="staff-avatar">${s.photo ? '<img src="'+s.photo+'" alt="'+s.name+'">' : s.name.charAt(0).toUpperCase()}</div>
+        <div class="staff-info">
+          <div class="staff-name">${s.name}</div>
+          <div class="staff-designation">${s.designation}</div>
+          <div class="staff-dept">${s.department || ''}</div>
+        </div>
+      </div>
+      <div class="staff-card-body">
+        ${s.phone ? '<div class="staff-contact-item">📞 '+s.phone+'</div>' : ''}
+        ${s.email ? '<div class="staff-contact-item">✉️ '+s.email+'</div>' : ''}
+        ${s.whatsapp ? '<div class="staff-contact-item">💬 '+s.whatsapp+'</div>' : ''}
+        <div class="staff-contact-item" style="color:#9ca3af;font-size:11px">🔗 ID: ${s.id}</div>
+      </div>
+      <div class="staff-card-actions">
+        <button class="btn btn-sm btn-navy" onclick="showQR(${i})">📱 QR</button>
+        <button class="btn btn-sm btn-outline" onclick="previewProfile(${i})">👁️ Preview</button>
+        <button class="btn btn-sm" style="background:#f0fdf4;color:#15803d" onclick="exportSingleCard(${i})">⬇️ Download</button>
+        <button class="btn btn-sm" style="background:#f0f4ff;color:var(--navy)" onclick="openEditStaff(${i})">✏️ Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteStaff(${i})">🗑️</button>
+      </div>
+    </div>`).join('') + '</div>';
+}
+
+// ── PROFILE PAGE GENERATOR ─────────────────────────────────
+function getProfileUrl(s) {
+  const base = (companyInfo.githubBaseUrl || '').replace(/\/$/, '');
+  return base ? base + '/' + s.id + '.html' : s.id + '.html';
+}
+
+function generateProfileHTML(s) {
+  const c       = companyInfo;
+  const primary = c.brandPrimary || '#0a2240';
+  const accent  = c.brandAccent  || '#e63030';
+
+  // ── vCard ──
+  const vcardLines = [
+    'BEGIN:VCARD', 'VERSION:3.0',
+    'FN:' + s.name,
+    'N:' + (s.name.split(' ').slice(1).join(' ')) + ';' + s.name.split(' ')[0] + ';;;',
+    'ORG:' + (c.companyName || 'Reprotronics LLC'),
+    'TITLE:' + s.designation,
+    s.phone    ? 'TEL;TYPE=CELL:'  + s.phone    : '',
+    s.whatsapp && s.whatsapp !== s.phone ? 'TEL;TYPE=WORK:' + s.whatsapp : '',
+    c.companyPhone  ? 'TEL;TYPE=WORK:'  + c.companyPhone  : '',
+    s.email    ? 'EMAIL;TYPE=WORK:' + s.email    : '',
+    c.companyEmail  ? 'EMAIL;TYPE=WORK:' + c.companyEmail  : '',
+    c.companyWebsite ? 'URL:' + c.companyWebsite : '',
+    c.companyAddress ? 'ADR;TYPE=WORK:;;' + c.companyAddress.replace(/\r?\n/g,' ') + ';;;;' : '',
+    'NOTE:' + s.designation + ' at ' + (c.companyName || 'Reprotronics LLC') + (s.bio ? ' | ' + s.bio : ''),
+    s.photo ? 'PHOTO;ENCODING=b;TYPE=JPEG:' + s.photo.replace(/^data:image\/[a-z]+;base64,/, '') : '',
+    'END:VCARD'
+  ].filter(Boolean).join('\r\n');
+
+  // ── Social buttons ──
+  function sb(url, label, icon, bg) {
+    if (!url) return '';
+    const href = url.startsWith('http') ? url : 'https://' + url;
+    return '<a href="' + href + '" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:' + bg + ';color:white;text-decoration:none;font-size:12px;font-weight:600"><span style="font-size:15px">' + icon + '</span>' + label + '</a>';
+  }
+  const companySocials = [
+    sb(c.socialLinkedIn,  'LinkedIn',   '🔗', '#0077b5'),
+    sb(c.socialFacebook,  'Facebook',   '📘', '#1877f2'),
+    sb(c.socialInstagram, 'Instagram',  '📸', 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)'),
+    sb(c.socialTwitter,   'Twitter / X','🐦', '#1da1f2'),
+    sb(c.socialYoutube,   'YouTube',    '▶️', '#ff0000'),
+    sb(c.socialTelegram,  'Telegram',   '✈️', '#0088cc'),
+  ].filter(Boolean).join('');
+  const personalSocials = [
+    sb(s.linkedIn,  'My LinkedIn',  '🔗', '#0077b5'),
+    sb(s.instagram, 'My Instagram', '📸', 'linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)'),
+  ].filter(Boolean).join('');
+
+  // ── Logo ── convert to white PNG via canvas before embedding (works on ALL phones incl iOS)
+  function convertToWhitePNG(src) {
+    try {
+      var tmpImg = document.createElement('img');
+      tmpImg.src = src;
+      var cv = document.createElement('canvas');
+      cv.width = tmpImg.naturalWidth || tmpImg.width || 600;
+      cv.height = tmpImg.naturalHeight || tmpImg.height || 200;
+      var cx = cv.getContext('2d');
+      cx.drawImage(tmpImg, 0, 0, cv.width, cv.height);
+      var px = cx.getImageData(0, 0, cv.width, cv.height);
+      for (var k = 0; k < px.data.length; k += 4) {
+        if (px.data[k+3] > 10) { px.data[k]=255; px.data[k+1]=255; px.data[k+2]=255; }
+      }
+      cx.putImageData(px, 0, 0);
+      return cv.toDataURL('image/png');
+    } catch(e) { return src; }
+  }
+  var whiteLogo = c.companyLogo ? convertToWhitePNG(c.companyLogo) : '';
+  const logoHTML = whiteLogo
+    ? '<img src="' + whiteLogo + '" alt="' + (c.companyName || '') + '" style="max-height:52px;max-width:170px;object-fit:contain;display:block;margin:0 auto 14px;opacity:0.95">'
+    : '<div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:5px 14px;margin-bottom:14px"><div style="width:7px;height:7px;background:' + accent + ';border-radius:50%"></div><span style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.9);letter-spacing:1px;text-transform:uppercase">' + (c.companyName || 'Reprotronics LLC') + '</span></div>';
+
+  // ── About Us — use rich HTML if available ──
+  const aboutHTML = c.companyAboutHTML || (c.companyAbout ? '<p>' + c.companyAbout + '</p>' : '');
+
+  // ── vCard script (blob method — works on all phones) ──
+  const vcardJSON = JSON.stringify(vcardLines);
+  const staffId   = s.id;
+
+  // ── Contact items ──
+  function ci(href, bg, icon, label, value, newline) {
+    const tag = href ? 'a href="' + href + '"' : 'div';
+    const etag = href ? 'a' : 'div';
+    return '<' + tag + ' style="display:flex;align-items:' + (newline?'flex-start':'center') + ';gap:12px;padding:11px 14px;border-radius:12px;text-decoration:none;color:inherit"><div style="width:38px;height:38px;border-radius:10px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">' + icon + '</div><div style="flex:1;min-width:0"><div style="font-size:11px;color:#9ca3af;font-weight:500">' + label + '</div><div style="font-size:13px;color:#1a1a2e;font-weight:600;margin-top:1px' + (newline?'':';white-space:nowrap;overflow:hidden;text-overflow:ellipsis') + '">' + value + '</div></div></' + etag + '>';
+  }
+
+  return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">\n<meta name="theme-color" content="' + primary + '">\n<title>' + s.name + ' \u2014 ' + (c.companyName || 'Reprotronics LLC') + '</title>\n<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">\n</head>\n<body style="margin:0;padding:0 0 40px;font-family:Inter,sans-serif;background:#f0f4f8;min-height:100vh;display:flex;align-items:flex-start;justify-content:center">\n<div style="width:100%;max-width:430px;background:white;min-height:100vh;box-shadow:0 0 40px rgba(0,0,0,0.12)">\n\n<!-- HERO -->\n<div style="background:linear-gradient(160deg,' + primary + ' 0%,#143660 100%);padding:26px 24px 64px;text-align:center;position:relative;overflow:hidden">\n' +
+    logoHTML +
+    (c.companyTagline ? '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:14px;font-style:italic">' + c.companyTagline + '</div>' : '') +
+    '<div style="display:inline-block;margin-bottom:12px"><div style="width:100px;height:100px;border-radius:50%;border:3px solid ' + accent + ';padding:3px;background:' + primary + ';display:inline-flex;align-items:center;justify-content:center">' +
+    (s.photo
+      ? '<img src="' + s.photo + '" style="width:88px;height:88px;border-radius:50%;object-fit:cover;display:block">'
+      : '<div style="width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,0.1);color:white;font-family:Playfair Display,serif;font-size:34px;font-weight:700;display:flex;align-items:center;justify-content:center">' + s.name.charAt(0).toUpperCase() + '</div>') +
+    '</div></div>\n' +
+    '<div style="font-family:Playfair Display,serif;font-size:24px;font-weight:700;color:white;line-height:1.2;margin-bottom:5px">' + s.name + '</div>\n' +
+    '<div style="font-size:13px;font-weight:600;color:' + accent + ';letter-spacing:0.5px;margin-bottom:3px">' + s.designation + '</div>\n' +
+    (s.department ? '<div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:8px">' + s.department + '</div>' : '') +
+    (s.bio ? '<div style="font-size:12px;color:rgba(255,255,255,0.65);max-width:280px;margin:0 auto;line-height:1.6;font-style:italic">' + s.bio + '</div>' : '') +
+    '</div>\n\n<!-- BODY -->\n<div style="background:white;border-radius:22px 22px 0 0;margin-top:-22px;position:relative;z-index:2;padding:22px 18px 10px">\n\n' +
+
+    '<!-- SAVE CONTACT BUTTON -->\n<button onclick="saveContact()" style="display:block;width:100%;padding:16px 20px;background:' + accent + ';color:white;border:none;border-radius:14px;font-family:Inter,sans-serif;font-size:16px;font-weight:700;cursor:pointer;text-align:center;margin-bottom:20px;box-shadow:0 6px 18px rgba(230,48,48,0.3);-webkit-appearance:none;appearance:none;line-height:1.4">+ Save Contact to Phone</button>\n\n' +
+
+    (aboutHTML ? '<!-- ABOUT US -->\n<div style="background:#f7f8fc;border-left:4px solid ' + accent + ';border-radius:10px;padding:14px 16px;margin-bottom:20px"><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">About ' + (c.companyName || 'Us') + '</div><div style="font-size:13px;color:#4b5563;line-height:1.7">' + aboutHTML + '</div></div>\n\n' : '') +
+
+    '<!-- CONTACT -->\n<div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;text-align:center">Contact Details</div>\n<div style="display:flex;flex-direction:column;gap:2px;margin-bottom:20px">\n' +
+    (s.phone    ? ci('tel:'+s.phone.replace(/\s/g,''),       '#e0f2fe','📞','Direct Mobile', s.phone, false) : '') +
+    (s.whatsapp ? ci('https://wa.me/'+s.whatsapp.replace(/[^\d]/g,''), '#dcfce7','💬','WhatsApp', s.whatsapp, false) : '') +
+    (s.email    ? ci('mailto:'+s.email,                      '#fef9c3','✉️','Work Email', s.email, false) : '') +
+    (c.companyPhone  ? ci('tel:'+c.companyPhone.replace(/\s/g,''), '#ede9fe','🏢','Company Phone', c.companyPhone, false) : '') +
+    (c.companyEmail  ? ci('mailto:'+c.companyEmail,          '#ede9fe','📧','Company Email', c.companyEmail, false) : '') +
+    (c.companyWebsite ? ci(c.companyWebsite,                 '#f0fdf4','🌐','Website', c.companyWebsite.replace(/^https?:\/\//,''), false) : '') +
+    (c.companyAddress ? ci('',                               '#fef3c7','📍','Office Address', c.companyAddress.replace(/\n/g,'<br>'), true) : '') +
+    '</div>\n\n' +
+
+    (companySocials  ? '<div style="height:1px;background:#f0f0f0;margin:16px 0"></div><div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;text-align:center">Follow Us</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:20px">' + companySocials + '</div>\n' : '') +
+    (personalSocials ? '<div style="font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;text-align:center">Connect with ' + s.name.split(' ')[0] + '</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:20px">' + personalSocials + '</div>\n' : '') +
+
+    '<div style="text-align:center;padding:12px 0 6px;border-top:1px solid #f0f0f0;margin-top:6px"><p style="font-size:11px;color:#d1d5db">Digital card by <strong style="color:' + primary + '">' + (c.companyName || 'Reprotronics LLC') + '</strong></p></div>\n' +
+    '</div></div>\n' +
+    '<script>\nfunction saveContact(){\nvar v=' + vcardJSON + ';\nvar b=new Blob([v],{type:"text/vcard;charset=utf-8"});\nvar u=URL.createObjectURL(b);\nvar a=document.createElement("a");\na.href=u;a.download="' + staffId + '.vcf";\ndocument.body.appendChild(a);a.click();\nsetTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(u);},2000);\n}\n<\/script>\n</body>\n</html>';
+}
+
+// ── QR CODE ─────────────────────────────────────────────────
+function showQR(idx) {
+  const s = staffList[idx];
+  const url = getProfileUrl(s);
+  currentQrStaffId = s.id;
+  document.getElementById('qrName').textContent = s.name;
+  document.getElementById('qrRole').textContent = s.designation + (s.department ? ' · ' + s.department : '');
+  document.getElementById('qrUrl').textContent  = url;
+  const display = document.getElementById('qrCodeDisplay');
+  display.innerHTML = '';
+  if (!companyInfo.githubBaseUrl) {
+    display.innerHTML = '<div style="padding:20px;text-align:center;color:#dc2626;font-size:13px">⚠️ Please set your GitHub Pages URL in Company Info first.</div>';
+  } else {
+    new QRCode(display, { text: url, width: 210, height: 210,
+      colorDark: companyInfo.brandPrimary || '#0a2240', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H });
+  }
+  // Show/hide upload reminder
+  const reminder = document.getElementById('qrUploadReminder');
+  if (reminder) {
+    reminder.style.display = companyInfo.githubBaseUrl ? 'block' : 'none';
+  }
+  document.getElementById('qrModal').classList.add('open');
+}
+
+function downloadQR() {
+  const canvas = document.querySelector('#qrCodeDisplay canvas');
+  if (!canvas) { alert('Please generate a QR code first.'); return; }
+  const out = document.createElement('canvas');
+  out.width = 320; out.height = 360;
+  const ctx = out.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 320, 360);
+  ctx.strokeStyle = companyInfo.brandPrimary || '#0a2240';
+  ctx.lineWidth = 6; ctx.strokeRect(3, 3, 314, 354);
+  ctx.drawImage(canvas, 55, 45, 210, 210);
+  ctx.fillStyle = companyInfo.brandPrimary || '#0a2240';
+  ctx.font = 'bold 15px Arial'; ctx.textAlign = 'center';
+  ctx.fillText(companyInfo.companyName || 'Reprotronics LLC', 160, 290);
+  ctx.fillStyle = companyInfo.brandAccent || '#e63030';
+  ctx.font = '12px Arial';
+  const s = staffList.find(x => x.id === currentQrStaffId);
+  if (s) ctx.fillText(s.name + ' · ' + s.designation, 160, 312);
+  ctx.fillStyle = '#9ca3af'; ctx.font = '10px Arial';
+  ctx.fillText('Scan to view profile & save contact', 160, 332);
+  // Single correct PNG download via data URL
+  const link = document.createElement('a');
+  link.download = 'qr-' + (currentQrStaffId || 'staff') + '.png';
+  link.href = out.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function copyUrl(e) {
+  const url = document.getElementById('qrUrl').textContent;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = e.target; btn.textContent = '✅ Copied!';
+    setTimeout(() => btn.textContent = '🔗 Copy URL', 2000);
+  });
+}
+
+function testProfileUrl() {
+  const url = document.getElementById('qrUrl').textContent;
+  if (!url) return;
+  window.open(url, '_blank');
+}
+
+// ── PREVIEW / EXPORT ───────────────────────────────────────
+function previewProfile(idx) {
+  const html = generateProfileHTML(staffList[idx]);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 15000);
+}
+function exportSingleCard(idx) {
+  triggerDownload(
+    new Blob([generateProfileHTML(staffList[idx])], {type:'text/html;charset=utf-8'}),
+    staffList[idx].id + '.html'
+  );
+}
+function exportAllCards() {
+  if (staffList.length === 0) { alert('No staff to export.'); return; }
+  if (typeof JSZip !== 'undefined') {
+    const zip = new JSZip();
+    staffList.forEach(s => zip.file(s.id + '.html', generateProfileHTML(s)));
+    zip.generateAsync({ type: 'blob' }).then(blob => {
+      triggerDownload(blob, 'reprotronics-staff-cards.zip');
+      setTimeout(() => alert('✅ ZIP downloaded with ' + staffList.length + ' profile(s)!\n\nExtract and upload HTML files to GitHub.'), 500);
+    });
+  } else {
+    // Staggered fallback
+    let i = 0;
+    function next() {
+      if (i >= staffList.length) { setTimeout(() => alert('✅ Downloaded ' + staffList.length + ' files!'), 300); return; }
+      exportSingleCard(i++); setTimeout(next, 900);
+    }
+    next();
+  }
+}
+
+// ── INIT ───────────────────────────────────────────────────
+load();
+loadCompanyForm();
+document.getElementById('headerCount').textContent = staffList.length;
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', function(e) { if (e.target === this) this.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
